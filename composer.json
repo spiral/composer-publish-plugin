@@ -1,5 +1,5 @@
 {
-  "name": "spiral/composer-publisher",
+  "name": "spiral/composer-publish-plugin",
   "type": "composer-plugin",
   "require": {
     "php": "^7.1",
