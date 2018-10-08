@@ -1,0 +1,30 @@
+{
+  "name": "spiral/composer-publisher",
+  "type": "library",
+  "description": "Publish package files using composer.json",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Wolfy-J",
+      "email": "wolfy.jd@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "spiral/boot": "^1.0",
+    "composer-plugin-api": "^1.1"
+  },
+  "require-dev": {
+    "composer/composer": "^1.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "Spiral\\Composer\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Spiral\\": "tests/"
+    }
+  }
+}
