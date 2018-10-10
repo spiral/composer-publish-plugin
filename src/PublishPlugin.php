@@ -53,8 +53,6 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
             return;
         }
 
-        $this->io->write("<info>Publishing package files using `<comment>{$cmd}</comment>`</info>");
-
         $packages = $event->getComposer()->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $installationManager = $event->getComposer()->getInstallationManager();
 
