@@ -98,7 +98,7 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
         }
 
         if ($this->io->isVerbose()) {
-            $this->io->write($p->getOutput());
+            $this->io->write($p->getOutput() . $p->getErrorOutput());
         }
     }
 
