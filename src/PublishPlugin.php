@@ -54,7 +54,6 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
         }
 
         $packages = $event->getComposer()->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
-        $installationManager = $event->getComposer()->getInstallationManager();
 
         foreach ($packages as $package) {
             $publish = $package->getExtra()[self::PUBLISH_KEY] ?? null;
@@ -64,7 +63,12 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
             }
 
             foreach ($publish as $data => $options) {
-                $this->publish($cmd, $installationManager->getInstallPath($package), $data, $options);
+                $this->publish(
+                    $cmd,
+                    $event->getComposer()->getInstallationManager()->getInstallPath($package),
+                    $data,
+                    $options
+                );
             }
         }
     }

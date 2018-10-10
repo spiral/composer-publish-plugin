@@ -79,10 +79,10 @@ class Publish
         if (strpos($options, ':') !== false) {
             list($publish->type, $publish->mode) = explode(':', $options);
             self::validateMode($publish->mode);
-
         } else {
             $publish->type = $options;
         }
+
         self::validateType($publish->type);
 
         return $publish;
