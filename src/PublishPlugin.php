@@ -93,7 +93,7 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
         $p->run();
 
         if (!$p->isSuccessful()) {
-            $this->io->writeError($p->getErrorOutput());
+            $this->io->writeError($p->getOutput());
             return;
         }
 
