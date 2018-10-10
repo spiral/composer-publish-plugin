@@ -15,9 +15,9 @@ class PublishTest extends TestCase
 {
     public function testParseEnsure()
     {
-        $p = Publish::parse('@public/dir', 'ensure');
+        $p = Publish::parse(".", '@public/dir', 'ensure');
 
-        $this->assertSame('@public/dir', $p->getSource());
+        $this->assertSame(null, $p->getSource());
         $this->assertSame('@public/dir', $p->getTarget());
         $this->assertSame(null, $p->getMode());
         $this->assertSame('ensure', $p->getType());
