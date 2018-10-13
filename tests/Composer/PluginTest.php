@@ -93,4 +93,15 @@ class PluginTest extends TestCase
             $done
         );
     }
+
+    public function testPublishFilesNoHandler()
+    {
+        $root = new RootPackage("root", "stable", "stable");
+        $root->setExtra([]);
+        $this->composer->setPackage($root);
+
+        $this->plugin->publishFiles(new Event("post-autoload-dump", $this->composer, $this->io));
+
+        $this->assertFileNotExists('tests/handler.log');
+    }
 }
