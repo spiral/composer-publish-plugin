@@ -82,7 +82,6 @@ class PluginTest extends TestCase
         ]);
 
         $this->composer->getRepositoryManager()->getLocalRepository()->addPackage($p);
-
         $this->im->method('getInstallPath')->willReturn('/vendor/sample/');
 
         $this->plugin->publishFiles(new Event("post-autoload-dump", $this->composer, $this->io));
@@ -99,6 +98,29 @@ class PluginTest extends TestCase
         $root = new RootPackage("root", "stable", "stable");
         $root->setExtra([]);
         $this->composer->setPackage($root);
+
+        $p = new Package("sample", "stable", "stable");
+        $p->setExtra([
+            'publish' => [
+                'file.json:@public/file.json' => 'replace:readonly'
+            ]
+        ]);
+
+        $this->composer->getRepositoryManager()->getLocalRepository()->addPackage($p);
+        $this->im->method('getInstallPath')->willReturn('/vendor/sample/');
+
+        $this->plugin->publishFiles(new Event("post-autoload-dump", $this->composer, $this->io));
+
+        $this->assertFileNotExists('tests/handler.log');
+    }
+
+    public function testPublishFilesNoFiles()
+    {
+        $p = new Package("sample", "stable", "stable");
+        $p->setExtra([]);
+
+        $this->composer->getRepositoryManager()->getLocalRepository()->addPackage($p);
+        $this->im->method('getInstallPath')->willReturn('/vendor/sample/');
 
         $this->plugin->publishFiles(new Event("post-autoload-dump", $this->composer, $this->io));
 
