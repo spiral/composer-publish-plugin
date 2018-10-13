@@ -46,14 +46,15 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
      */
     public function publishFiles(Event $event)
     {
-        $cmd = $event->getComposer()->getPackage()->getExtra()[self::PUBLISH_CMD] ?? null;
+        $cmd = $this->composer->getPackage()->getExtra()[self::PUBLISH_CMD] ?? null;
 
         if (empty($cmd)) {
             $this->io->writeError('<comment>missing `publish-cmd` handler</comment>');
+
             return;
         }
 
-        $packages = $event->getComposer()->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
+        $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
 
         foreach ($packages as $package) {
             $publish = $package->getExtra()[self::PUBLISH_KEY] ?? null;
@@ -65,7 +66,7 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
             foreach ($publish as $data => $options) {
                 $this->publish(
                     $cmd,
-                    $event->getComposer()->getInstallationManager()->getInstallPath($package),
+                    $this->composer->getInstallationManager()->getInstallPath($package),
                     $data,
                     $options
                 );
@@ -81,7 +82,7 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
      */
     protected function publish(string $cmd, string $path, string $data, string $type)
     {
-        $publish = Publish::parse($path, $data, $type);
+        $publish = Command::parse($path, $data, $type);
 
         $p = new Process(join(' ', [
             $cmd,
@@ -94,6 +95,7 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
 
         if (!$p->isSuccessful()) {
             $this->io->writeError($p->getOutput() . $p->getErrorOutput());
+
             return;
         }
 

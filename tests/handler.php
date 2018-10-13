@@ -5,10 +5,4 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
-
-namespace Spiral\Composer\Exception;
-
-class PublishException extends \RuntimeException
-{
-
-}
+file_put_contents("tests/handler.log", join(" ", $argv), FILE_APPEND);

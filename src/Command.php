@@ -8,7 +8,9 @@
 
 namespace Spiral\Composer;
 
-class Publish
+use Spiral\Composer\Exception\PublishException;
+
+class Command
 {
     /** @var string */
     private $target;
@@ -58,11 +60,11 @@ class Publish
      * @param string $path
      * @param string $data
      * @param string $options
-     * @return Publish
+     * @return Command
      *
      * @throws PublishException
      */
-    public static function parse(string $path, string $data, string $options): Publish
+    public static function parse(string $path, string $data, string $options): Command
     {
         $publish = new static();
 
