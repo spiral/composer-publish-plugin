@@ -49,8 +49,6 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
         $cmd = $this->composer->getPackage()->getExtra()[self::PUBLISH_CMD] ?? null;
 
         if (empty($cmd)) {
-            $this->io->writeError('<comment>missing `publish-cmd` handler</comment>');
-
             return;
         }
 
