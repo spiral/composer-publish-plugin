@@ -5,12 +5,13 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Composer;
 
 use Spiral\Composer\Exception\PublishException;
 
-class Command
+final class Command
 {
     /** @var string */
     private $target;

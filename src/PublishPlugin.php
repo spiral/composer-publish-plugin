@@ -5,6 +5,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+declare(strict_types=1);
 
 namespace Spiral\Composer;
 
@@ -15,7 +16,7 @@ use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Symfony\Component\Process\Process;
 
-class PublishPlugin implements PluginInterface, EventSubscriberInterface
+final class PublishPlugin implements PluginInterface, EventSubscriberInterface
 {
     // Extra key to point to publish command handler
     public const PUBLISH_CMD = 'publish-cmd';
@@ -48,7 +49,7 @@ class PublishPlugin implements PluginInterface, EventSubscriberInterface
     {
         $cmd = $this->composer->getPackage()->getExtra()[self::PUBLISH_CMD] ?? null;
 
-        if (empty($cmd)) {
+        if ($cmd === null) {
             return;
         }
 
