@@ -147,13 +147,20 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $p = Process::fromShellCommandline(join(' ', [
+        $args = [
             $cmd,
             escapeshellarg($publish->getType()),
             escapeshellarg($publish->getTarget()),
             escapeshellarg($source),
             escapeshellarg($publish->getMode())
-        ]));
+        ];
+
+        if (is_callable([Process::class, 'fromShellCommandline'], false)) {
+            // v4.0+
+            $p = new Process($args);
+        } else {
+            $p = new Process(implode(' ', $args));
+        }
         $p->run();
 
         if (!$p->isSuccessful()) {
