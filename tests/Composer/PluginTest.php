@@ -1,10 +1,13 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
+declare(strict_types=1);
 
 namespace Spiral\Composer\Tests;
 
@@ -32,14 +35,14 @@ class PluginTest extends TestCase
     /** @var MockObject */
     private $im;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->composer = new Composer();
         $this->composer->setConfig(new Config(true, getcwd()));
         $this->io = $this->createMock('Composer\IO\IOInterface');
 
-        $root = new RootPackage("root", "stable", "stable");
+        $root = new RootPackage('root', 'stable', 'stable');
         $root->setExtra(['publish-cmd' => 'php "tests/handler.php"']);
         $this->composer->setPackage($root);
 
@@ -55,14 +58,14 @@ class PluginTest extends TestCase
         $this->plugin->activate($this->composer, $this->io);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
-        if (file_exists("tests/handler.log")) {
-            unlink("tests/handler.log");
+        if (file_exists('tests/handler.log')) {
+            unlink('tests/handler.log');
         }
     }
 
-    public function testGetSubscribedEvents()
+    public function testGetSubscribedEvents(): void
     {
         $this->assertSame(
             [
@@ -75,9 +78,9 @@ class PluginTest extends TestCase
         );
     }
 
-    public function testPublishFiles()
+    public function testPublishFiles(): void
     {
-        $p = new Package("sample", "stable", "stable");
+        $p = new Package('sample', 'stable', 'stable');
         $p->setExtra([
             'publish' => [
                 'file.json:@public/file.json' => 'replace:readonly'
@@ -87,7 +90,7 @@ class PluginTest extends TestCase
         $this->composer->getRepositoryManager()->getLocalRepository()->addPackage($p);
         $this->im->method('getInstallPath')->willReturn('/vendor/sample/');
 
-        $this->plugin->publishFiles(new Event("post-autoload-dump", $this->composer, $this->io));
+        $this->plugin->publishFiles(new Event('post-autoload-dump', $this->composer, $this->io));
 
         $done = file_get_contents('tests/handler.log');
         $this->assertSame(
@@ -96,13 +99,13 @@ class PluginTest extends TestCase
         );
     }
 
-    public function testPublishFilesNoHandler()
+    public function testPublishFilesNoHandler(): void
     {
-        $root = new RootPackage("root", "stable", "stable");
+        $root = new RootPackage('root', 'stable', 'stable');
         $root->setExtra([]);
         $this->composer->setPackage($root);
 
-        $p = new Package("sample", "stable", "stable");
+        $p = new Package('sample', 'stable', 'stable');
         $p->setExtra([
             'publish' => [
                 'file.json:@public/file.json' => 'replace:readonly'
@@ -112,20 +115,20 @@ class PluginTest extends TestCase
         $this->composer->getRepositoryManager()->getLocalRepository()->addPackage($p);
         $this->im->method('getInstallPath')->willReturn('/vendor/sample/');
 
-        $this->plugin->publishFiles(new Event("post-autoload-dump", $this->composer, $this->io));
+        $this->plugin->publishFiles(new Event('post-autoload-dump', $this->composer, $this->io));
 
         $this->assertFileNotExists('tests/handler.log');
     }
 
-    public function testPublishFilesNoFiles()
+    public function testPublishFilesNoFiles(): void
     {
-        $p = new Package("sample", "stable", "stable");
+        $p = new Package('sample', 'stable', 'stable');
         $p->setExtra([]);
 
         $this->composer->getRepositoryManager()->getLocalRepository()->addPackage($p);
         $this->im->method('getInstallPath')->willReturn('/vendor/sample/');
 
-        $this->plugin->publishFiles(new Event("post-autoload-dump", $this->composer, $this->io));
+        $this->plugin->publishFiles(new Event('post-autoload-dump', $this->composer, $this->io));
 
         $this->assertFileNotExists('tests/handler.log');
     }

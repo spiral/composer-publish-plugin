@@ -6,6 +6,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Composer;
@@ -39,7 +40,7 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
      * @param Composer    $composer
      * @param IOInterface $io
      */
-    public function activate(Composer $composer, IOInterface $io)
+    public function activate(Composer $composer, IOInterface $io): void
     {
         $this->composer = $composer;
         $this->io = $io;
@@ -48,7 +49,7 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
     /**
      * @param Event $event
      */
-    public function captureLock(Event $event)
+    public function captureLock(Event $event): void
     {
         if ($event->getComposer()->getLocker()->isLocked()) {
             $this->lockedPackages = $event->getComposer()->getLocker()->getLockData()['packages'];
@@ -60,10 +61,9 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
      *
      * @param Event $event
      */
-    public function publishFiles(Event $event)
+    public function publishFiles(Event $event): void
     {
         $cmd = $this->composer->getPackage()->getExtra()[self::PUBLISH_CMD] ?? null;
-
         if ($cmd === null) {
             return;
         }
@@ -73,7 +73,7 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
         foreach ($packages as $package) {
             $publish = $package->getExtra()[self::PUBLISH_KEY] ?? null;
 
-            if (empty($publish)) {//|| !$this->requiresUpdate($package)) {
+            if (empty($publish) || !$this->requiresUpdate($package)) {
                 continue;
             }
 
@@ -87,6 +87,19 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
                 );
             }
         }
+    }
+
+    /**
+     * @return array list of events
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            'pre-install-cmd'    => [['captureLock', 0]],
+            'pre-update-cmd'     => [['captureLock', 0]],
+            'post-update-dump'   => [['publishFiles', 0]],
+            'post-autoload-dump' => [['publishFiles', 0]],
+        ];
     }
 
     /**
@@ -121,7 +134,7 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
         string $data,
         string $type,
         PackageInterface $package
-    ) {
+    ): void {
         $publish = Command::parse($path, $data, $type);
 
         $source = $publish->getSource();
@@ -147,23 +160,25 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $args = [
+        $args = implode(' ', [
             $cmd,
             escapeshellarg($publish->getType()),
             escapeshellarg($publish->getTarget()),
             escapeshellarg($source),
             escapeshellarg($publish->getMode())
-        ];
+        ]);
 
         if (is_callable([Process::class, 'fromShellCommandline'], false)) {
             // v4.0+
-            $p = new Process($args);
+            $p = Process::fromShellCommandline($args);
         } else {
-            $p = new Process(implode(' ', $args));
+            $p = new Process($args);
         }
         $p->run();
 
         if (!$p->isSuccessful()) {
+            echo $p->getOutput() . $p->getErrorOutput();
+
             $this->io->writeError($p->getOutput() . $p->getErrorOutput());
 
             return;
@@ -172,18 +187,5 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
         if ($this->io->isVerbose()) {
             $this->io->write($p->getOutput() . $p->getErrorOutput());
         }
-    }
-
-    /**
-     * @return array list of events
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            'pre-install-cmd'    => [['captureLock', 0]],
-            'pre-update-cmd'     => [['captureLock', 0]],
-            'post-update-dump'   => [['publishFiles', 0]],
-            'post-autoload-dump' => [['publishFiles', 0]],
-        ];
     }
 }

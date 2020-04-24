@@ -6,6 +6,7 @@
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
 declare(strict_types=1);
 
 namespace Spiral\Composer;
@@ -114,7 +115,7 @@ final class Command
      *
      * @throws PublishException
      */
-    private static function validateType(string $type)
+    private static function validateType(string $type): void
     {
         if (!in_array($type, ['follow', 'replace', 'ensure'])) {
             throw new PublishException("Invalid operation type `{$type}`.");
@@ -126,7 +127,7 @@ final class Command
      *
      * @throws PublishException
      */
-    private static function validateMode(string $mode)
+    private static function validateMode(string $mode): void
     {
         if (!in_array($mode, ['runtime', 'readonly'])) {
             throw new PublishException("Invalid file mode `{$mode}`.");

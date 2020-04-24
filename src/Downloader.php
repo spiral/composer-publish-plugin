@@ -27,15 +27,42 @@ final class Downloader
      */
     public function __construct(PackageInterface $package, string $filename)
     {
-        $this->url = str_replace([
+        $this->url = str_replace(
+            [
             '{tag}',
             '{file}'
-        ], [
+            ],
+            [
             $package->getPrettyVersion(),
             $filename
-        ],
+            ],
             $package->getExtra()['release-url']
         );
+    }
+
+    /**
+     * Clean up.
+     */
+    public function __destruct()
+    {
+        if ($this->dir === null) {
+            return;
+        }
+
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($this->dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                rmdir($file->getRealPath());
+            } else {
+                unlink($file->getRealPath());
+            }
+        }
+
+        rmdir($this->dir);
     }
 
     /**
@@ -56,7 +83,7 @@ final class Downloader
     public function download(string $directory): string
     {
         if (!extension_loaded('zip')) {
-            throw new \ErrorException("ZIP extension missing");
+            throw new \ErrorException('ZIP extension missing');
         }
 
         $this->dir = $directory . '/' . md5($this->url) . '/';
@@ -74,26 +101,5 @@ final class Downloader
         unlink($zipFilename);
 
         return $this->dir;
-    }
-
-    /**
-     * Clean up.
-     */
-    public function __destruct()
-    {
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($this->dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                rmdir($file->getRealPath());
-            } else {
-                unlink($file->getRealPath());
-            }
-        }
-
-        rmdir($this->dir);
     }
 }

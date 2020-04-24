@@ -1,10 +1,13 @@
 <?php
+
 /**
  * Spiral Framework.
  *
  * @license   MIT
  * @author    Anton Titov (Wolfy-J)
  */
+
+declare(strict_types=1);
 
 namespace Spiral\Composer\Tests;
 
@@ -13,9 +16,9 @@ use Spiral\Composer\Command;
 
 class CommandTest extends TestCase
 {
-    public function testParseEnsure()
+    public function testParseEnsure(): void
     {
-        $p = Command::parse(".", '@public/dir', 'ensure');
+        $p = Command::parse('.', '@public/dir', 'ensure');
 
         $this->assertSame(null, $p->getSource());
         $this->assertSame('@public/dir', $p->getTarget());
@@ -23,9 +26,9 @@ class CommandTest extends TestCase
         $this->assertSame('ensure', $p->getType());
     }
 
-    public function testParseDirectory()
+    public function testParseDirectory(): void
     {
-        $p = Command::parse(".", 'dir:@public/dir', 'replace');
+        $p = Command::parse('.', 'dir:@public/dir', 'replace');
 
         $this->assertSame('./dir', $p->getSource());
         $this->assertSame('@public/dir', $p->getTarget());
@@ -33,9 +36,9 @@ class CommandTest extends TestCase
         $this->assertSame('replace', $p->getType());
     }
 
-    public function testParseDirectoryStar()
+    public function testParseDirectoryStar(): void
     {
-        $p = Command::parse(".", 'dir/*:@public/dir', 'replace');
+        $p = Command::parse('.', 'dir/*:@public/dir', 'replace');
 
         $this->assertSame('./dir/*', $p->getSource());
         $this->assertSame('@public/dir', $p->getTarget());
@@ -43,9 +46,9 @@ class CommandTest extends TestCase
         $this->assertSame('replace', $p->getType());
     }
 
-    public function testParseFile()
+    public function testParseFile(): void
     {
-        $p = Command::parse(".", 'dir/file.json:@public/dir/file.json', 'follow');
+        $p = Command::parse('.', 'dir/file.json:@public/dir/file.json', 'follow');
 
         $this->assertSame('./dir/file.json', $p->getSource());
         $this->assertSame('@public/dir/file.json', $p->getTarget());
@@ -53,9 +56,9 @@ class CommandTest extends TestCase
         $this->assertSame('follow', $p->getType());
     }
 
-    public function testParseFileMode()
+    public function testParseFileMode(): void
     {
-        $p = Command::parse(".", 'dir/file.json:@public/dir/file.json', 'follow:readonly');
+        $p = Command::parse('.', 'dir/file.json:@public/dir/file.json', 'follow:readonly');
 
         $this->assertSame('./dir/file.json', $p->getSource());
         $this->assertSame('@public/dir/file.json', $p->getTarget());
@@ -63,9 +66,9 @@ class CommandTest extends TestCase
         $this->assertSame('follow', $p->getType());
     }
 
-    public function testParseFileMode2()
+    public function testParseFileMode2(): void
     {
-        $p = Command::parse(".", 'dir/file.json:@public/dir/file.json', 'follow:runtime');
+        $p = Command::parse('.', 'dir/file.json:@public/dir/file.json', 'follow:runtime');
 
         $this->assertSame('./dir/file.json', $p->getSource());
         $this->assertSame('@public/dir/file.json', $p->getTarget());
@@ -76,16 +79,16 @@ class CommandTest extends TestCase
     /**
      * @expectedException \Spiral\Composer\Exception\PublishException
      */
-    public function testParseException()
+    public function testParseException(): void
     {
-        $p = Command::parse(".", 'dir/file.json:@public/dir/file.json', 'xx:runtime');
+        $p = Command::parse('.', 'dir/file.json:@public/dir/file.json', 'xx:runtime');
     }
 
     /**
      * @expectedException \Spiral\Composer\Exception\PublishException
      */
-    public function testParseException2()
+    public function testParseException2(): void
     {
-        $p = Command::parse(".", 'dir/file.json:@public/dir/file.json', 'follow:wrong');
+        $p = Command::parse('.', 'dir/file.json:@public/dir/file.json', 'follow:wrong');
     }
 }
