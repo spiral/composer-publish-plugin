@@ -138,7 +138,7 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
                 );
 
                 try {
-                    $source = $downloader->download('D:/projects/personal/keeper/tmp/');
+                    $source = $downloader->download(sys_get_temp_dir());
                     $this->io->write('<info>OK</info>');
                 } catch (\Throwable $e) {
                     $this->io->write(sprintf('<error>%s</error>', $e->getMessage()));
@@ -147,7 +147,7 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
             }
         }
 
-        $p = new Process(join(' ', [
+        $p = Process::fromShellCommandline(join(' ', [
             $cmd,
             escapeshellarg($publish->getType()),
             escapeshellarg($publish->getTarget()),
