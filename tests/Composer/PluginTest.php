@@ -66,7 +66,10 @@ class PluginTest extends TestCase
     {
         $this->assertSame(
             [
-                'post-autoload-dump' => [['publishFiles', 0]]
+                'pre-install-cmd'    => [['captureLock', 0]],
+                'pre-update-cmd'     => [['captureLock', 0]],
+                'post-update-dump'   => [['publishFiles', 0]],
+                'post-autoload-dump' => [['publishFiles', 0]],
             ],
             $this->plugin->getSubscribedEvents()
         );

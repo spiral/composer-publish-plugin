@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -12,6 +13,7 @@ namespace Spiral\Composer;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
+use Composer\Package\PackageInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Script\Event;
 use Symfony\Component\Process\Process;
@@ -30,6 +32,9 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
     /** @var IOInterface */
     private $io;
 
+    /** @var array|null */
+    private $lockedPackages = [];
+
     /**
      * @param Composer    $composer
      * @param IOInterface $io
@@ -38,6 +43,16 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
     {
         $this->composer = $composer;
         $this->io = $io;
+    }
+
+    /**
+     * @param Event $event
+     */
+    public function captureLock(Event $event)
+    {
+        if ($event->getComposer()->getLocker()->isLocked()) {
+            $this->lockedPackages = $event->getComposer()->getLocker()->getLockData()['packages'];
+        }
     }
 
     /**
@@ -58,7 +73,7 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
         foreach ($packages as $package) {
             $publish = $package->getExtra()[self::PUBLISH_KEY] ?? null;
 
-            if (empty($publish)) {
+            if (empty($publish)) {//|| !$this->requiresUpdate($package)) {
                 continue;
             }
 
@@ -67,27 +82,76 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
                     $cmd,
                     $this->composer->getInstallationManager()->getInstallPath($package),
                     $data,
-                    $options
+                    $options,
+                    $package
                 );
             }
         }
     }
 
     /**
-     * @param string $cmd
-     * @param string $path
-     * @param string $data
-     * @param string $type
+     * Return true if package has updated it's version.
+     *
+     * @param PackageInterface $package
+     * @return bool
      */
-    protected function publish(string $cmd, string $path, string $data, string $type)
+    protected function requiresUpdate(PackageInterface $package): bool
     {
+        foreach ($this->lockedPackages as $current) {
+            if ($current['name'] === $package->getName()) {
+                // version change
+                return $package->getPrettyVersion() !== $current['version'];
+            }
+        }
+
+        // newly installed
+        return true;
+    }
+
+    /**
+     * @param string           $cmd
+     * @param string           $path
+     * @param string           $data
+     * @param string           $type
+     * @param PackageInterface $package
+     */
+    protected function publish(
+        string $cmd,
+        string $path,
+        string $data,
+        string $type,
+        PackageInterface $package
+    ) {
         $publish = Command::parse($path, $data, $type);
+
+        $source = $publish->getSource();
+        if ($publish->isDownloaded()) {
+            $downloader = new Downloader($package, $publish->getSource());
+
+            if ($this->io->isVerbose()) {
+                $this->io->write(
+                    sprintf(
+                        'Downloading <comment>%s</comment>... ',
+                        $downloader->getURL()
+                    ),
+                    false
+                );
+
+                try {
+                    $source = $downloader->download('D:/projects/personal/keeper/tmp/');
+                    $this->io->write('<info>OK</info>');
+                } catch (\Throwable $e) {
+                    $this->io->write(sprintf('<error>%s</error>', $e->getMessage()));
+                    return;
+                }
+            }
+        }
 
         $p = new Process(join(' ', [
             $cmd,
             escapeshellarg($publish->getType()),
             escapeshellarg($publish->getTarget()),
-            escapeshellarg($publish->getSource()),
+            escapeshellarg($source),
             escapeshellarg($publish->getMode())
         ]));
         $p->run();
@@ -109,6 +173,9 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
+            'pre-install-cmd'    => [['captureLock', 0]],
+            'pre-update-cmd'     => [['captureLock', 0]],
+            'post-update-dump'   => [['publishFiles', 0]],
             'post-autoload-dump' => [['publishFiles', 0]],
         ];
     }

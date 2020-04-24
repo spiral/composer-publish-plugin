@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Spiral Framework.
  *
@@ -24,6 +25,9 @@ final class Command
 
     /** @var null|string */
     private $mode;
+
+    /** @var bool */
+    private $download = false;
 
     /**
      * @return string
@@ -58,6 +62,14 @@ final class Command
     }
 
     /**
+     * @return bool
+     */
+    public function isDownloaded(): bool
+    {
+        return $this->download;
+    }
+
+    /**
      * @param string $path
      * @param string $data
      * @param string $options
@@ -70,17 +82,23 @@ final class Command
         $publish = new static();
 
         if (strpos($data, ':') !== false) {
-            list($publish->source, $publish->target) = explode(':', $data);
+            [$publish->source, $publish->target] = explode(':', $data);
         } else {
             $publish->target = $data;
         }
 
         if (!empty($publish->source)) {
-            $publish->source = rtrim($path, '/') . '/' . $publish->source;
+            if (preg_match('/release\(([^\)]+)\)/iu', $publish->source, $m)) {
+                $publish->download = true;
+                $publish->source = $m[1];
+            } else {
+                // path
+                $publish->source = rtrim($path, '/') . '/' . $publish->source;
+            }
         }
 
         if (strpos($options, ':') !== false) {
-            list($publish->type, $publish->mode) = explode(':', $options);
+            [$publish->type, $publish->mode] = explode(':', $options);
             self::validateMode($publish->mode);
         } else {
             $publish->type = $options;
