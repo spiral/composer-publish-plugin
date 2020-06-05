@@ -188,4 +188,14 @@ final class PublishPlugin implements PluginInterface, EventSubscriberInterface
             $this->io->write($p->getOutput() . $p->getErrorOutput());
         }
     }
+
+    public function deactivate(Composer $composer, IOInterface $io): void
+    {
+        // do nothing
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io): void
+    {
+        // do nothing
+    }
 }
